@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Picker App</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header>
+    <div class="menu-toggle" id="menuToggle">&#9776;</div>
+    <h1>Color Picker App</h1>
+  </header>
+
+  <nav class="side-menu" id="sideMenu">
+    <div class="close-arrow" id="closeArrow">&#8592;</div>
+    <ul>
+      <li><a href="#" data-page="home">Home</a></li>
+      <li><a href="#" data-page="hex">HEX Finder</a></li>
+      <li><a href="#" data-page="templates">Color Templates</a></li>
+      <li><a href="#" data-page="feedback">Feedback</a></li>
+      <li><a href="#" data-page="contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div id="homePage" class="blank-page active">
+      <span>Home</span>
+    </div>
+    <div id="hexPage" class="container" style="display:none;">
+      <div class="image-area">
+        <img src="color/shadowarmy.jpg" alt="Pick a color from this image" id="mainImage">
+      </div>
+      <aside class="info-panel">
+        <div class="color-preview" id="colorPreview"></div>
+        <p class="hex-label">HEX: <span id="hex">#------</span></p>
+        <p class="rgb-label">RGB: <span id="rgb">--, --, --</span></p>
+        <button id="copyHex">Copy HEX</button>
+      </aside>
+    </div>
+    <div id="templatesPage" class="blank-page">
+      <span>Color Templates</span>
+    </div>
+    <div id="feedbackPage" class="blank-page">
+      <span>Feedback</span>
+    </div>
+    <div id="contactPage" class="blank-page">
+      <span>Contact</span>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Color Picker App</p>
+  </footer>
+
+  <script>
+    // Page switching logic
+    const pages = {
+      home: document.getElementById('homePage'),
+      hex: document.getElementById('hexPage'),
+      templates: document.getElementById('templatesPage'),
+      feedback: document.getElementById('feedbackPage'),
+      contact: document.getElementById('contactPage')
+    };
+    document.querySelectorAll('.side-menu a').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        Object.values(pages).forEach(page => page.style.display = 'none');
+        const page = link.getAttribute('data-page');
+        pages[page].style.display = page === 'hex' ? 'flex' : 'flex';
+      });
+    });
+    // Show Home by default
+    Object.values(pages).forEach(page => page.style.display = 'none');
+    pages.home.style.display = 'flex';
+
+    // Hamburger menu toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const sideMenu = document.getElementById('sideMenu');
+    const closeArrow = document.getElementById('closeArrow');
+
+    menuToggle.addEventListener('click', () => {
+      sideMenu.classList.toggle('show');
+      menuToggle.style.display = 'none';
+    });
+
+    closeArrow.addEventListener('click', () => {
+      sideMenu.classList.remove('show');
+      menuToggle.style.display = 'block';
+    });
+
+    // Color picking logic (only for HEX Finder)
+    const img = document.getElementById('mainImage');
+    if (img) {
+      const colorPreview = document.getElementById('colorPreview');
+      const hexSpan = document.getElementById('hex');
+      const rgbSpan = document.getElementById('rgb');
+      let currentHex = "#------";
+      img.addEventListener('click', function(e) {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        const rect = img.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const pixel = ctx.getImageData(x, y, 1, 1).data;
+        const hex = "#" + ((1 << 24) | (pixel[0] << 16) | (pixel[1] << 8) | pixel[2]).toString(16).slice(1).toUpperCase();
+        currentHex = hex;
+        colorPreview.style.background = hex;
+        hexSpan.textContent = hex;
+        rgbSpan.textContent = `${pixel[0]}, ${pixel[1]}, ${pixel[2]}`;
+      });
+      document.getElementById('copyHex').addEventListener('click', () => {
+        navigator.clipboard.writeText(currentHex).then(() => {
+          alert('HEX copied: ' + currentHex);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
